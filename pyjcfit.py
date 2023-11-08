@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # set searching options
     option = {'maxiteration': 50, 'precision': 0.0001, 'convgtest': 1E-100}
     # maxiteration is the maximum searching iteration.
-    # precision is the smallest numerical search step.
+    # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # convgtest is the minimum difference of sum(residual**2) between searching steps to judge convergence.
 
     #  --------- fitting starts
