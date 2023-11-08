@@ -1,7 +1,7 @@
 # pyjcfit
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
-# First coded in MATLAB 2014b on 2016/04/05
-# Converted to python 3.12 on 2023/11/07
+First coded in MATLAB 2014b on 2016/04/05
+Converted to python 3.12 on 2023/11/07
 
 Curve fitting for 1D vectors or ND matrix with any given model equations using a random search algorithm.
 
