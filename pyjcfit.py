@@ -28,10 +28,6 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot
-import inspect
-
-
-# from scipy.optimize import curve_fit
 
 def pyjcfit(f, xdata, ydata, paraguess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'convgtest': 1E-100}):
     para = paraguess
@@ -93,9 +89,6 @@ def objective(x, para):
     return para[0] * x + para[1]
 
 
-# def objectivec(x, a, b):  # for scipy curve_fit
-#     return a * x + b
-
 if __name__ == '__main__':
     # load input variables
 
@@ -122,7 +115,6 @@ if __name__ == '__main__':
     # convgtest is the minimum difference of sum(residual**2) between searching steps to judge convergence.
 
     #  --------- fitting starts
-    # para, _ = curve_fit(objectivec, x_value, y_value)
     fitresults = pyjcfit(objective, x_value, y_value, paraguess, bounds, option)
     para = fitresults['para']
     para_hist = fitresults['para_hist']
