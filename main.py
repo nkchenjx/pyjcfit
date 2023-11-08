@@ -28,12 +28,14 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot
+
+
 # from scipy.optimize import curve_fit
 
 def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
     para = paraguess
     para_hist = [paraguess] * (option['maxiteration'] + 1)
-    error_hist = [0]*option['maxiteration']
+    error_hist = [0] * option['maxiteration']
     errorlast = 0
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
@@ -46,16 +48,16 @@ def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
             precision = option['precision']
             lb = bounds['lb'][i]
             ub = bounds['ub'][i]
-            ll = p-lb
-            nl = range(int(np.floor(np.log2(ll/precision+1)*2)), 2, -1)
+            ll = p - lb
+            nl = range(int(np.floor(np.log2(ll / precision + 1) * 2)), 2, -1)
             nl = np.divide(list(nl), 2)
-            ul = ub-p
-            nu = range(2, int(np.floor(np.log2(ul/precision+1)*2)), 1)
+            ul = ub - p
+            nu = range(2, int(np.floor(np.log2(ul / precision + 1) * 2)), 1)
             nu = np.divide(list(nu), 2)
             ps = np.append(lb, np.subtract(p, np.multiply(np.exp2(nl), precision)))
             ps = np.append(ps, np.add(p, np.multiply(np.exp2(nu), precision)))
             ps = np.append(ps, ub)
-            error = [0]*len(ps)
+            error = [0] * len(ps)
             for j in range(len(ps)):
                 para[i] = ps[j]
                 residual = ydata - f(xdata, para)
@@ -64,29 +66,33 @@ def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
             para[i] = ps[indmin]
         para_hist[iteration + 1] = para
         error_hist[iteration] = error[indmin]
-        #convergence test
-        if abs(error[indmin]-errorlast) <= option['convgtest']:
+        # convergence test
+        if abs(error[indmin] - errorlast) <= option['convgtest']:
             print('\n convergence reached')
             break
         errorlast = error[indmin]
     # print(para_hist)
     fe = pyjcfit_finderror(f, xdata, ydata, para, bounds, option)
     return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist}
+
+
 def pyjcfit_finderror(f, xdata, ydata, para, bounds, option):
     yfit = f(xdata, para)
     residual = np.divide(ydata, yfit)
 
     return
 
+
 # ----------- An example objective function and main function  ---------------
 def objective(x, para):
     return para[0] * x + para[1]
+
 
 # def objectivec(x, a, b):  # for scipy curve_fit
 #     return a * x + b
 
 if __name__ == '__main__':
-    #load input variables
+    # load input variables
 
     data = pd.read_csv("data.csv")
     # print(data)
@@ -94,15 +100,14 @@ if __name__ == '__main__':
     y_value = data.y
     #   print(y_value)
 
-
     # initial guess of parameters and bounds
     paraguess = [1, 1]  # parameters for the objective function
-    bounds = {'ub': [1000, 1000], 'lb':[-1000, -1000]} # bounds ordered the same as paramters
+    bounds = {'ub': [1000, 1000], 'lb': [-1000, -1000]}  # bounds ordered the same as paramters
     # check if bounds and paraguess are well ordered.
     d1 = np.subtract(bounds['ub'], paraguess)
     d2 = np.subtract(paraguess, bounds['lb'])
     d3 = np.multiply(d1, d2)
-    d4 = [i for i in d3 if i<0]
+    d4 = [i for i in d3 if i < 0]
     if d4:
         print("bounds unusual")
     # set searching options
@@ -110,7 +115,6 @@ if __name__ == '__main__':
     # maxiteration is the maximum searching iteration.
     # precision is the smallest numerical search step.
     # convgtest is the minimum difference of sum(residual**2) between searching steps to judge convergence.
-
 
     #  --------- fitting starts
     # para, _ = curve_fit(objectivec, x_value, y_value)
@@ -126,15 +130,15 @@ if __name__ == '__main__':
     print('\nfitted para = ', para)
     y_new = objective(x_new, para)
 
-
-    pyplot.subplot(1,2,1)
+    pyplot.subplot(1, 2, 1)
     pyplot.scatter(x_value, y_value)
-    pyplot.plot(x_new, y_new, '-', color= 'red' )
+    pyplot.plot(x_new, y_new, '-', color='red')
     pyplot.plot(x_value, residual, '--', color='orange')
-    pyplot.title(str('y =%.5f * x + (%.5f)' %(para[0], para[1])))
+    pyplot.title(str('y =%.5f * x + (%.5f)' % (para[0], para[1])))
     # pyplot.show()
 
-    pyplot.subplot(1,2,2)
-    pyplot.plot( error_hist, '-', color='red')
+    pyplot.subplot(1, 2, 2)
+    pyplot.plot(error_hist, '-', color='red')
     pyplot.title('error history')
     pyplot.show()
+# end of example
