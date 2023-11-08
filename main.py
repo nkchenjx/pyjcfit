@@ -1,5 +1,7 @@
+
+
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
-# First coded in MATLAB at 2016/04/05
+# First coded in MATLAB on 2016/04/05
 # Converted to python 3.12 2023/11/07
 
 # MIT License
@@ -29,12 +31,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 # from scipy.optimize import curve_fit
-
-def objective(x, para):
-    return para[0] * x + para[1]
-
-# def objectivec(x, a, b):  # for scipy curve_fit
-#     return a * x + b
 
 def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
     para = paraguess
@@ -84,7 +80,13 @@ def pyjcfit_finderror(f, xdata, ydata, para, bounds, option):
 
     return
 
-# Press the green button in the gutter to run the script.
+# ----------- An example objective function and main function  ---------------
+def objective(x, para):
+    return para[0] * x + para[1]
+
+# def objectivec(x, a, b):  # for scipy curve_fit
+#     return a * x + b
+
 if __name__ == '__main__':
     #load input variables
 
