@@ -1,5 +1,3 @@
-
-
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB at 2016/04/05
 # Converted to python 3.12 2023/11/07
