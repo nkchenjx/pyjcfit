@@ -8,6 +8,7 @@ Curve fitting for 1D vectors or ND matrix with any given model equations using a
 Developed and tested on software versions
 Python 3.12
 Windows 11
+Anaconda 3 11/2023
 
 Basic idea: 
 For a given raw data and a math model, use the inital guess of the parameters in the model to generate the guessed data and get the residual between the two sets of data.
