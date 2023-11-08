@@ -1,6 +1,6 @@
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
-# Converted to python 3.12 2023/11/07
+# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023.
 
 # MIT License
 # Copyright (c) 2023 Jixin Chen
@@ -28,24 +28,29 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot
+import inspect
 
 
 # from scipy.optimize import curve_fit
 
-def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
+def pyjcfit(f, xdata, ydata, paraguess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'convgtest': 1E-100}):
     para = paraguess
+    if len(bounds) == 0:
+        ub =  [1E10] * len(paraguess)
+        lb = [-1E10] * len(paraguess)
+        bounds = {'ub': ub, 'lb': lb}
     para_hist = [paraguess] * (option['maxiteration'] + 1)
     error_hist = [0] * option['maxiteration']
     errorlast = 0
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
-            print('\n')
+            print('.')
         else:
             print('.', end='')
 
         for i in range(len(para)):
             p = para[i]
-            precision = option['precision']
+            precision = option['precision'] * (abs(para[i]) + option['precision'])
             lb = bounds['lb'][i]
             ub = bounds['ub'][i]
             ll = p - lb
@@ -78,12 +83,12 @@ def pyjcfit(f, xdata, ydata, paraguess, bounds, option):
 
 def pyjcfit_finderror(f, xdata, ydata, para, bounds, option):
     yfit = f(xdata, para)
-    residual = np.divide(ydata, yfit)
+    residual = np.subtract(ydata, yfit)
 
     return
 
 
-# ----------- An example objective function and main function  ---------------
+# ----------- An example objective function and main function  ---------------:
 def objective(x, para):
     return para[0] * x + para[1]
 
@@ -122,7 +127,7 @@ if __name__ == '__main__':
     para = fitresults['para']
     para_hist = fitresults['para_hist']
     error_hist = fitresults['error_hist']
-    residual = np.divide(y_value, objective(x_value, para))
+    residual = np.subtract(y_value, objective(x_value, para))
     #  -------_ fitting ends
 
     # plot results
