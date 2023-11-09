@@ -4,7 +4,7 @@
 First coded in MATLAB 2014b on 2016/04/05
 Converted to python 3.12 on 2023/11/07
 
-Curve fitting for 1D vectors or ND matrix with any given model equations using a random search algorithm.
+Curve fitting for 1D vectors or ND matrix with any given model equations using a random search algorithm. 2D and above data will need to revise the pyjcfit function to allow data loading and treating. Or simply vectorize multidimential data and feed to the function will work without change.
 
 Developed and tested on software versions
 Python 3.12
