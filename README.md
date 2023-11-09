@@ -1,6 +1,6 @@
 # pyjcfit
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
-# The algorithm is 10-100 times slower (after optimization of parameters) than Levenberg–Marquardt searching algorithm, and is suitable for super COMPLICATED model, global fitting, or neural network optimization.
+# The algorithm is 10-100 times slower (after optimization of parameters) than Levenberg–Marquardt searching algorithm, and is suitable for COMPLICATED model, global fitting, or neural network optimization.
 First coded in MATLAB 2014b on 2016/04/05
 Converted to python 3.12 on 2023/11/07
 
