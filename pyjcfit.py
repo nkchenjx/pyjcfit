@@ -33,19 +33,19 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
     :param f: objective function input xdata and para, give yfit. can be complicated combination of functions of
-           multi-dimension or global data sturcture then vectorize x and y.
+           multi-dimension or global data structure then vectorize x and y.
     :param xdata: independent valuable, array-like. For high dimension or multiple curves, stack and vectorize
     :param ydata: dependent valuable, array-like. If results are nD or a series of data, stack and vectorize
-    :param para_guess: initial guess of the parameters of the model f. All parameters in an vector array, e.g. list.
+    :param para_guess: initial guess of the parameters of the model f. All parameters in a vector array, e.g. list.
     :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
-    :param option: maxiteration, maximum number of iteration, necessary for most of fitting project to control time.
-           precision, significatn number of parameters. ex_step, searching spacing exponentially distributed,
-           e.g. 0.5 for a parameter 1.3 and presiion 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ...
+    :param option: maxiteration, maximum number of iteration, necessary for most fitting projects to control time.
+           precision, significant figures of parameters. ex_step, searching spacing exponentially distributed,
+           e.g. 0.5 for a parameter 1.3 and precision 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ...
     :return: {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
              para is the fitted parameter
              para_hist is the history of the parameter of the searching iterations.
              error_hist is the square of residual over the iterations.
-             gof, goodness of fitting contains R-squar, chi-square, sigma of the residual,
+             gof, goodness of fitting contains R-square, chi-square, sigma of the residual,
                   and bounds of the parameters with 95% confidence
     An example is given in the _main_ function.
    
@@ -58,6 +58,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
         Single-Particle Organolead Halide Perovskite Photoluminescence as a Probe for Surface Reaction Kinetics.
         ACS Applied Matierals & Interfaces, 2019, 11(19), 18034-18043.
     """
+    
     para = para_guess.copy()
     if len(bounds) == 0:
         ub =  [1E10] * len(para)
