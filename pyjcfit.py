@@ -1,7 +1,6 @@
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
 # Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023.
-
 # MIT License
 # Copyright (c) 2023 Jixin Chen
 #
@@ -29,8 +28,37 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 
-def pyjcfit(f, xdata, ydata, paraguess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100}):
-    para = paraguess.copy()
+def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100}):
+    """
+    use non-linear least square random searching algorithm to fit a function f to data.
+    assume ydata = f(xdata, parameters)
+    :param f: objective function input xdata and para, give yfit. can be complicated combination of functions of
+           multi-dimension or global data sturcture then vectorize x and y.
+    :param xdata: independent valuable, array-like. For high dimension or multiple curves, stack and vectorize
+    :param ydata: dependent valuable, array-like. If results are nD or a series of data, stack and vectorize
+    :param para_guess: initial guess of the parameters of the model f. All parameters in an vector array, e.g. list.
+    :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
+    :param option: maxiteration, maximum number of iteration, necessary for most of fitting project to control time.
+           precision, significatn number of parameters. ex_step, searching spacing exponentially distributed,
+           e.g. 0.5 for a parameter 1.3 and presiion 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ...
+    :return: {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
+             para is the fitted parameter
+             para_hist is the history of the parameter of the searching iterations.
+             error_hist is the square of residual over the iterations.
+             gof, goodness of fitting contains R-squar, chi-square, sigma of the residual,
+                  and bounds of the parameters with 95% confidence
+    An example is given in the _main_ function.
+   
+    References
+    ----------
+    [1] https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.6b05697
+        Jixin Chen, Joseph R Pyle, Kurt Waldo Sy Piecco, Anatoly B Kolomeisky, Christy F Landes,
+        A Two-Step Method for smFRET Data Analysis, J. Phys. Chem. B, 2016, 120 (29), pp 7128–7132
+    [2] Juvinch R. Vicente, Ali Rafiei Miandashti, Kurt Sy Piecco, Joseph R. Pyle, Martin E. Kordesch, Jixin Chen*,
+        Single-Particle Organolead Halide Perovskite Photoluminescence as a Probe for Surface Reaction Kinetics.
+        ACS Applied Matierals & Interfaces, 2019, 11(19), 18034-18043.
+    """
+    para = para_guess.copy()
     if len(bounds) == 0:
         ub =  [1E10] * len(para)
         lb = [-1E10] * len(para)
@@ -141,8 +169,15 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
 
 
 # ----------- An example objective function and main function  ---------------:
+
+# import numpy as np
+# import pandas as pd
+# from matplotlib import pyplot
+# from pyjcfit import pyjcfit
+
 def objective(x, para): #must have all parameters in the list para
     return para[0] * x + para[1]
+
 
 
 if __name__ == '__main__':
