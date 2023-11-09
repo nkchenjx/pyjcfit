@@ -47,6 +47,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
              error_hist is the square of residual over the iterations.
              gof, goodness of fitting contains R-square, chi-square, sigma of the residual,
                   and bounds of the parameters with 95% confidence
+   
     An example is given in the _main_ function.
    
     References
