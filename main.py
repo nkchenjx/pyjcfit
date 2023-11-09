@@ -58,11 +58,12 @@ if __name__ == '__main__':
     d3 = np.multiply(d1, d2)
     d4 = [i for i in d3 if i < 0]
     if d4:
-        print("bounds unusual")
+        print("bounds unusual, double check bounds and paraguess...")
     # set searching options
-    option = {'maxiteration': 50, 'precision': 0.00001, 'convgtest': 1E-100}
+    option = {'maxiteration': 50, 'precision': 0.0001, 'exp_step': 0.5, 'convgtest': 1E-100}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
+    # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
     # convgtest is the minimum difference of sum(residual**2) between searching steps to judge convergence.
 
     #  --------- fitting starts
@@ -72,11 +73,15 @@ if __name__ == '__main__':
     para_hist = fitresults['para_hist']
     error_hist = fitresults['error_hist']
     residual = np.subtract(y_value, objective(x_value, para))
+    goodness_of_fit = fitresults['gof']
      # ------- fitting ends
 
-    # plot results
-    x_new = np.arange(0, 20, 0.1)
+
+    #------ plot results
     print('\nfitted para = ', para)
+    print('goodness of fitting: ', goodness_of_fit)
+
+    x_new = np.arange(0, 20, 0.1)
     y_new = objective(x_new, para)
 
     pyplot.subplot(1, 2, 1)
