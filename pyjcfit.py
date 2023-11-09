@@ -30,8 +30,8 @@
 # assume ydata = f(xdata, parameters)
 # :param f: objective function input xdata and para, give yfit. can be complicated combination of functions of
 #        multi-dimension or global data structure then vectorize x and y.
-# :param xdata: independent valuable, array-like. For high dimension or multiple curves, stack and vectorize
-# :param ydata: dependent valuable, array-like. If results are nD or a series of data, stack and vectorize
+# :param xdata: independent variable, array-like. For high dimension or multiple curves, stack and vectorize
+# :param ydata: dependent variable, array-like. If results are nD or a series of data, stack and vectorize
 # :param para_guess: initial guess of the parameters of the model f. All parameters in a vector array, e.g. list.
 # :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
 # :param option: maxiteration, maximum number of iteration, necessary for most fitting projects to control time.
@@ -135,8 +135,8 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
     assume ydata = f(xdata, parameters)
     :param f: objective function input xdata and para, give yfit. can be complicated combination of functions of
            multi-dimension or global data structure then vectorize x and y.
-    :param xdata: independent valuable, array-like. For high dimension or multiple curves, stack and vectorize
-    :param ydata: dependent valuable, array-like. If results are nD or a series of data, stack and vectorize
+    :param xdata: independent variable, array-like. For high dimension or multiple curves, stack and vectorize
+    :param ydata: dependent variable, array-like. If results are nD or a series of data, stack and vectorize
     :param para_guess: initial guess of the parameters of the model f. All parameters in a vector array, e.g. list.
     :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
     :param option: maxiteration, maximum number of iteration, necessary for most fitting projects to control time.
