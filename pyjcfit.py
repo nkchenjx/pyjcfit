@@ -35,7 +35,7 @@ def pyjcfit(f, xdata, ydata, paraguess, bounds = {}, option = {'maxiteration': 5
         ub =  [1E10] * len(para)
         lb = [-1E10] * len(para)
         bounds = {'ub': ub, 'lb': lb}
-    para_hist = [para] * (option['maxiteration'] + 1)
+    para_hist = [para.copy()] * (option['maxiteration'] + 1)
     error_hist = [0] * option['maxiteration']
     errorlast = 0
     for iteration in range(option['maxiteration']):
@@ -63,8 +63,8 @@ def pyjcfit(f, xdata, ydata, paraguess, bounds = {}, option = {'maxiteration': 5
                 error[j] = np.dot(residual, residual)
             indmin = np.array(error).argmin()
             para[i] = ps[indmin]
-        para_hist[iteration + 1] = para
-        error_hist[iteration] = error[indmin]
+        para_hist[iteration + 1] = para.copy()
+        error_hist[iteration] = error[indmin].copy()
         # convergence test
         if abs(error[indmin] - errorlast) <= option['convgtest']:
             print('\n convergence reached')
