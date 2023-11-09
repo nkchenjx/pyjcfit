@@ -57,7 +57,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 10, 'precision': 0.001, 'exp_step': 2, 'convgtest': 1E-100}
+    option = {'maxiteration': 10, 'precision': 0.001, 'exp_step': 0.5, 'convgtest': 1E-100}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 # end of example
 
     # ------ control function curve_fit running time ----
-    print('\n---- control function curve_fit using Levenberg-Marquardt algorithm ----')
+    print('\n---- comparing function curve_fit from scipy using Levenberg-Marquardt algorithm ----')
     def objectivec(x, a, b):  # for scipy curve_fit
         return a * x + b
 
