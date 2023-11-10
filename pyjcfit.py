@@ -195,7 +195,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
             indmin = np.array(error).argmin()
             para[i] = ps[indmin]
         para_hist[iteration + 1] = para.copy()
-        error_hist[iteration] = error[indmin].copy()
+        error_hist[iteration] = error[indmin]
         # convergence test
         if abs(error[indmin] - errorlast) <= option['convgtest']:
             print('\n convergence reached')
