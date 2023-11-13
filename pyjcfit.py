@@ -129,7 +129,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 
-def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100}):
+def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100, 'show_error_surface': False}):
     """
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
@@ -162,12 +162,13 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
     """
 
     para = para_guess.copy()
-    if len(bounds) == 0:
+    if not bounds:
         ub = [1E10] * len(para)
         lb = [-1E10] * len(para)
         bounds = {'ub': ub, 'lb': lb}
-    para_hist = [para.copy()] * (option['maxiteration'] + 1)
-    error_hist = [0] * option['maxiteration']
+    para_hist = [None] * (option['maxiteration'] + 1)
+    para_hist[0] = para.copy()
+    error_hist = [None] * option['maxiteration']
     errorlast = 0
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
@@ -198,7 +199,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
         error_hist[iteration] = error[indmin]
         # convergence test
         if abs(error[indmin] - errorlast) <= option['convgtest']:
-            print('\n convergence reached')
+            print('\n convergence reached at # %i iteration' % iteration)
             break
         errorlast = error[indmin]
     # print(para_hist)
@@ -260,12 +261,15 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
         para95_lb[i] = psl[indminl]
 
         # # show the error vs parameter curve
-        # pyplot.plot(psu, sigmau)
-        # pyplot.plot(psl, sigmal)
-        # pyplot.scatter(psu[indminu], sigmau[indminu])
-        # pyplot.scatter(psl[indminl], sigmal[indminl])
-        # pyplot.show()
-
+        try:
+            if option['show_error_surface']:
+                pyplot.plot(psu, sigmau)
+                pyplot.plot(psl, sigmal)
+                pyplot.scatter(psu[indminu], sigmau[indminu])
+                pyplot.scatter(psl[indminl], sigmal[indminl])
+                pyplot.show()
+        except Exception:
+            print('show_error_surface is missing in option.')
     goodness_of_fit = {'rsq': rsq, 'chisq': chisq, 'sigma': sigma, 'para95_lb': para95_lb, 'para95_ub': para95_ub}
     return goodness_of_fit
 
@@ -279,15 +283,21 @@ if __name__ == '__main__':
     import time
 
     def objective(x, para):
-        return para[0] * x + para[1]
+        return np.add(np.multiply(para[0],x), para[1])
 
 
-    # load input variables
-    data = pd.read_csv("data.csv")
-    # print(data)
-    x_value = data.x
-    y_value = data.y
-    #   print(y_value)
+    # # load input variables
+    # data = pd.read_csv("data.csv")
+    # # print(data)
+    # x_value = data.x
+    # y_value = data.y
+    # #   print(y_value)
+
+    # or simulate a set of data
+    n = 10000
+    para_true = (1.23456789, 9.87654321)
+    x_value = np.arange(0, n, 1)
+    y_value = list(np.add(objective(x_value, para_true), np.random.normal(0, 10, n)))
 
     # initial guess of parameters and bounds
     para_guess = [1, 1]  # initial guessed parameters for the objective function
@@ -302,7 +312,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 50, 'precision': 0.001, 'exp_step': 0.5, 'convgtest': 1E-100}
+    option = {'maxiteration': 100, 'precision': 0.0000001, 'exp_step': 0.5, 'convgtest': 1E-100}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -325,7 +335,7 @@ if __name__ == '__main__':
     print('goodness of fitting: ', goodness_of_fit)
     print(fit_results['para_hist'])
 
-    x_new = np.arange(0, 20, 0.1)
+    x_new = np.arange(0, np.max(x_value), 0.1)
     y_new = objective(x_new, para)
 
     pyplot.subplot(1, 2, 1)
