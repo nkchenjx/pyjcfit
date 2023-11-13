@@ -32,18 +32,27 @@ from pyjcfit import pyjcfit
 import time
 
 # ----------- An example objective function and main function  ---------------:
+# def objective(x, para):
+#     return para[0] * x + para[1]
 def objective(x, para):
-    return para[0] * x + para[1]
+    return np.add(np.multiply(para[0],x), para[1])
 
 
 if __name__ == '__main__':
 
-    # load input variables
-    data = pd.read_csv("data.csv")
-    # print(data)
-    x_value = data.x
-    y_value = data.y
-    #   print(y_value)
+    # # load input variables
+    # data = pd.read_csv("data.csv")
+    # # print(data)
+    # x_value = data.x
+    # y_value = data.y
+    # #   print(y_value)
+
+    # or simulate a set of data
+    n = 1000
+    x_value = np.arange(0, n, 1)
+    para_true = [1.2345, 2,3456]
+    y_value = list(np.add(objective(x_value, para_true), np.random.normal(0, 10, n)))
+
 
     # initial guess of parameters and bounds
     para_guess = [1, 1]  # initial guessed parameters for the objective function
@@ -57,7 +66,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 10, 'precision': 0.001, 'exp_step': 0.5, 'convgtest': 1E-100}
+    option = {'maxiteration': 100, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100, 'show_error_surface': True}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -82,7 +91,7 @@ if __name__ == '__main__':
     print(fit_results['para_hist'])
 
 
-    x_new = np.arange(0, 20, 0.1)
+    x_new = np.arange(0, np.max(x_value), 0.1)
     y_new = objective(x_new, para)
 
     pyplot.subplot(1, 2, 1)
@@ -108,7 +117,7 @@ if __name__ == '__main__':
     para, _ = curve_fit(objectivec, x_value, y_value, method='lm') # lm: the Levenberg-Marquardt algorithm through least square residual search.
     print('fitted para', para)
     print('---- elapsed time for curve_fit = %f seconds  ----' % (time.time() - start_time))
-    x_new = np.arange(0, 20, 0.1)
+    x_new = np.arange(0, np.max(x_value), 0.1)
     y_new = objectivec(x_new, para[0], para[1])
     pyplot.scatter(x_value, y_value)
     pyplot.plot(x_new, y_new, '-', color='red')
