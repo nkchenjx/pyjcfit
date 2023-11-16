@@ -5,7 +5,7 @@
 First coded in MATLAB 2014b on 2016/04/05
 Converted to python 3.12 on 2023/11/07
 
-Curve fitting for 1D vectors or ND matrix with any given model equations using a random search algorithm, Jumping-Chain Fitting (JCFit). 
+Curve fitting for 1D vectors or ND matrix with any given model equations using a random search algorithm, Jump-Chain Fitting (JCFit). 
 For 2D and above data you can either revise the pyjcfit function to allow data loading and treating, or simply vectorize multidimential data and feed them to the function. The latter will work without changing the pyjcfit function. This will be the same for global fitting, one can append all vectors into a single vector of x and y for global and nD matrix fitting. This is very different than other algorithms that require well structured and behaved data for fitting.
 
 Developed and tested on software versions
