@@ -129,7 +129,14 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 
-def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100, 'show_error_surface': False}):
+def score_func(residual, option):
+    if option == 'L2':
+        return np.dot(residual, residual)
+    elif option == 'L1':
+        return np.abs(residual).sum()
+
+
+def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
     """
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
@@ -140,7 +147,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
     :param para_guess: initial guess of the parameters of the model f. All parameters in a vector array, e.g. list.
     :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
     :param option: maxiteration, maximum number of iteration, necessary for most fitting projects to control time.
-           precision, significant figures of parameters. ex_step, searching spacing exponentially distributed,
+           precision, significant figures of parameters, e.g. 0.1 two sig. fig., 0.01, 3 sig. fig. et.. ex_step, searching spacing exponentially distributed,
            e.g. 0.5 for a parameter 1.3 and precision 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ...
     :return: {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
              para is the fitted parameter
@@ -160,12 +167,27 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
         Single-Particle Organolead Halide Perovskite Photoluminescence as a Probe for Surface Reaction Kinetics.
         ACS Applied Matierals & Interfaces, 2019, 11(19), 18034-18043.
     """
+    if not bounds:
+        ub = [1E20]*len(para_guess)
+        lb = [-1E20]*len(para_guess)
+        bounds = {'ub': ub, 'lb': lb}
+    if not option:
+        option = {'maxiteration': 100, 'precision': 1E-6, 'exp_step': 0.5, 'convgtest': 1E-100, 'score_func': 'L2', 'show_error_surface': False}
+    else:
+        if not 'score_func' in option:
+           option.update({'score_func': 'L2'})
+        if not 'maxiteration' in option:
+            option.update({'maxiteration': 100})
+        if not 'precision' in option:
+            option.update({'precision': 0.00001}) # 5 sig. fig.
+        if not 'exp_step' in option:
+            option.update({'exp_step': 0.5})
+        if not 'convgtest' in option:
+            option.update({'convgtest': 1E-100})
+        if not 'show_error_surface' in option:
+            option.update({'show_error_surface': False})
 
     para = para_guess.copy()
-    if not bounds:
-        ub = [1E10] * len(para)
-        lb = [-1E10] * len(para)
-        bounds = {'ub': ub, 'lb': lb}
     para_hist = [None] * (option['maxiteration'] + 1)
     para_hist[0] = para.copy()
     error_hist = [None] * option['maxiteration']
@@ -191,8 +213,11 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
             error = [0] * len(ps)
             for j in range(len(ps)):
                 para[i] = ps[j]
-                residual = ydata - f(xdata, para)
-                error[j] = np.dot(residual, residual)
+                try:
+                    residual = np.subtract(ydata, f(xdata, para))
+                    error[j] = score_func(residual, option['score_func'])
+                except:
+                    error[j] = np.inf
             indmin = np.array(error).argmin()
             para[i] = ps[indmin]
         para_hist[iteration + 1] = para.copy()
@@ -203,8 +228,11 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 
             break
         errorlast = error[indmin]
     # print(para_hist)
+    if iteration == option['maxiteration'] - 1:
+        print('maximum iteration number reached, change it if needed and/or use the result para as initial guess to continue.')
     gof = pyjcfit_goodness(f, xdata, ydata, para, bounds, option)
     return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
+    # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
 
 
 def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
@@ -233,12 +261,16 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
         ul = ub-p
         nu = np.arange(1, int(np.floor(np.log2(ul / precision + 1))), option['exp_step'])
         psu = np.append(p, np.add(p, np.multiply(np.exp2(nu), precision)))
+        psu = np.append(psu, ub)
         sigmau = [0]*len(psu)
         for j in range(len(psu)):
             parau[i] = psu[j]
-            yfitu = f(xdata, parau)
-            residual = np.subtract(ydata, yfitu)
-            sigmau[j] = np.sqrt(np.dot(residual, residual)/n)
+            try:
+                yfitu = f(xdata, parau)
+                residual = np.subtract(ydata, yfitu)
+                sigmau[j] = np.sqrt(np.dot(residual, residual)/n)
+            except:
+                sigmau[j] = np.inf
         a = abs(np.subtract(sigmau , sigma))
         b = abs(a-2*sigma/np.sqrt(n-len(para)))
         indminu = np.array(b).argmin()
@@ -249,12 +281,16 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
         ll = p - lb
         nl = np.arange(int(np.floor(np.log2(ll / precision + 1))), 1, -option['exp_step'])
         psl = np.append(np.subtract(p, np.multiply(np.exp2(nl), precision)), p)
+        psl = np.append(lb, psl)
         sigmal = [0] * len(psl)
         for j in range(len(psl)):
             paral[i] = psl[j]
-            yfitl = f(xdata, paral)
-            residual = np.subtract(ydata, yfitl)
-            sigmal[j] = np.sqrt(np.dot(residual, residual)/n)
+            try:
+                yfitl = f(xdata, paral)
+                residual = np.subtract(ydata, yfitl)
+                sigmal[j] = np.sqrt(np.dot(residual, residual)/n)
+            except:
+                sigma[j] = np.inf
         a = abs(sigmal - sigma)
         b = abs(a-2*sigma/np.sqrt(n-len(para)))
         indminl = np.array(b).argmin()
@@ -263,14 +299,16 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
         # # show the error vs parameter curve
         try:
             if option['show_error_surface']:
+                pyplot.figure()
                 pyplot.plot(psu, sigmau)
                 pyplot.plot(psl, sigmal)
                 pyplot.scatter(psu[indminu], sigmau[indminu])
                 pyplot.scatter(psl[indminl], sigmal[indminl])
-                pyplot.show()
+                # pyplot.show()
         except Exception:
             print('show_error_surface is missing in option.')
     goodness_of_fit = {'rsq': rsq, 'chisq': chisq, 'sigma': sigma, 'para95_lb': para95_lb, 'para95_ub': para95_ub}
+    # 95% bounds are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
     return goodness_of_fit
 
 
@@ -294,15 +332,17 @@ if __name__ == '__main__':
     # #   print(y_value)
 
     # or simulate a set of data
-    n = 10000
+    n = 100
     para_true = (1.23456789, 9.87654321)
     x_value = np.arange(0, n, 1)
-    y_value = list(np.add(objective(x_value, para_true), np.random.normal(0, 10, n)))
+    x_valuen = x_value + np.random.normal(0, 0.00001, len(x_value))
+    y_value = list(np.add(objective(x_valuen, para_true), np.random.normal(0, 10, len(x_value)))) #SNR about sum of paraTrue(A)/noise
+
 
     # initial guess of parameters and bounds
     para_guess = [1, 1]  # initial guessed parameters for the objective function
-    bounds = {'ub': [1000, 1000],
-              'lb': [-1000, -1000]}  # upper bounds (ub) and lower bounds (lb) ordered the same as parameters
+    bounds = {'ub': (1000, 1000),
+              'lb': (-1000, -1000)}  # upper bounds (ub) and lower bounds (lb) ordered the same as parameters
     # check if bounds and para_guess are well-ordered.
     d1 = np.subtract(bounds['ub'], para_guess)
     d2 = np.subtract(para_guess, bounds['lb'])
@@ -312,7 +352,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 100, 'precision': 0.0000001, 'exp_step': 0.5, 'convgtest': 1E-100}
+    option = {'maxiteration': 100, 'precision': 1E-15, 'exp_step': 0.5, 'convgtest': 1E-100}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -341,7 +381,7 @@ if __name__ == '__main__':
     pyplot.subplot(1, 2, 1)
     pyplot.scatter(x_value, y_value)
     pyplot.plot(x_new, y_new, '-', color='red')
-    pyplot.plot(x_value, residual, '--', color='orange')
+    pyplot.plot(x_value, residual, '-', color='orange')
     pyplot.title(str('y =%.5f * x + (%.5f)' % (para[0], para[1])))
     # pyplot.show()
 
