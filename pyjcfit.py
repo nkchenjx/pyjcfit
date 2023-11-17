@@ -192,7 +192,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
     para_hist[0] = para.copy()
     error_hist = [None] * option['maxiteration']
     errorlast = 0
-    error_message = 0
+    error_counts = 0
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
             print('.')
@@ -219,7 +219,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
                     error[j] = score_func(residual, option['score_func'])
                 except:
                     error[j] = np.inf
-                    error_message += 1
+                    error_counts += 1
             indmin = np.array(error).argmin()
             para[i] = ps[indmin]
         para_hist[iteration + 1] = para.copy()
@@ -232,8 +232,8 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
     # print(para_hist)
     if iteration == option['maxiteration'] - 1:
         print('maximum iteration number reached, change it if needed and/or use the result para as initial guess to continue.')
-    if error_message:
-        print('encountered ', error_message, ' function calculation fails probably due to large bounds.')
+    if error_counts:
+        print('encountered ', error_counts, ' function calculation fails probably due to large bounds.')
 
     gof = pyjcfit_goodness(f, xdata, ydata, para, bounds, option)
     return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
