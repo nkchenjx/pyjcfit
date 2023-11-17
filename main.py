@@ -51,7 +51,7 @@ if __name__ == '__main__':
     n = 1000
     x_value = np.arange(0, n, 1)
     para_true = [1.2345, 2,3456]
-    y_value = list(np.add(objective(x_value, para_true), np.random.normal(0, 10, n)))
+    y_value = list(np.add(objective(x_value, para_true), np.random.normal(0, 10, len(x_value))))
 
 
     # initial guess of parameters and bounds
@@ -93,18 +93,18 @@ if __name__ == '__main__':
 
     x_new = np.arange(0, np.max(x_value), 0.1)
     y_new = objective(x_new, para)
-
+    pyplot.figure()
     pyplot.subplot(1, 2, 1)
     pyplot.scatter(x_value, y_value)
     pyplot.plot(x_new, y_new, '-', color='red')
     pyplot.plot(x_value, residual, '--', color='orange')
-    pyplot.title(str('y =%.5f * x + (%.5f)' % (para[0], para[1])))
+    pyplot.title(str('pyjcfit: y =%.5f * x + (%.5f)' % (para[0], para[1])))
     # pyplot.show()
 
     pyplot.subplot(1, 2, 2)
     pyplot.plot(error_hist, '-', color='red')
     pyplot.title('error history')
-    pyplot.show()
+    # pyplot.show()
 
 # end of example
 
@@ -119,7 +119,8 @@ if __name__ == '__main__':
     print('---- elapsed time for curve_fit = %f seconds  ----' % (time.time() - start_time))
     x_new = np.arange(0, np.max(x_value), 0.1)
     y_new = objectivec(x_new, para[0], para[1])
+    pyplot.figure()
     pyplot.scatter(x_value, y_value)
     pyplot.plot(x_new, y_new, '-', color='red')
-    pyplot.title(str('y =%.5f * x + (%.5f)' % (para[0], para[1])))
+    pyplot.title(str('LM: y =%.5f * x + (%.5f)' % (para[0], para[1])))
     pyplot.show()
