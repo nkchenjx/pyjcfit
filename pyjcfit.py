@@ -223,7 +223,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
             indmin = np.array(error).argmin()
             para[i] = ps[indmin]
         para_hist[iteration + 1] = para.copy()
-        error_hist[iteration] = error[indmin]
+        error_hist[iteration] = error[indmin]/len(ydata)
         # convergence test
         if abs(error[indmin] - errorlast) <= option['convgtest']:
             print('\n convergence reached at # %i iteration' % iteration)
@@ -234,7 +234,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
         print('maximum iteration number reached, change it if needed and/or use the result para as initial guess to continue.')
     if error_message:
         print('encountered ', error_message, ' function calculation fails probably due to large bounds.')
-    
+
     gof = pyjcfit_goodness(f, xdata, ydata, para, bounds, option)
     return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
     # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
