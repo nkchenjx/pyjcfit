@@ -1,7 +1,7 @@
 # Use a non-linear least square random searching algorithm to fit data.
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
-# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023.
+# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023, in PyCharm 2023.2. 
 # MIT License
 # Copyright (c) 2023 Jixin Chen
 #
