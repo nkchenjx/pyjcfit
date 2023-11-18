@@ -223,12 +223,13 @@ def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
     errorlast = 0
     error_counts = 0
     para_order = list(range(len(para)))
-    random.shuffle(para_order)
+    
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
             print('.')
         else:
             print('.', end='')
+        random.shuffle(para_order)
         for i in para_order:
             p = para[i]
             precision = option['precision'] * (abs(para[i]) + option[
