@@ -1,7 +1,7 @@
 # Use a non-linear least square random searching algorithm to fit data.
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
-# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023, in PyCharm 2023.2. 
+# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023, in PyCharm 2023.2.
 # MIT License
 # Copyright (c) 2023 Jixin Chen
 #
@@ -128,6 +128,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot
+import random
 
 
 # ---------The ENTRANCE-------------------:
@@ -191,9 +192,11 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main func
             'unknown scoring methods, please code it and change the option in pyjcfit. Right now will try least square.')
         option['score_func'] = score_func_L2
     # ----------done initialization of options----------
+
     # --------- call the kernel to fit the data---------
     results = pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option)
     # --------- calcualte the goodness of the fitting results---------
+
     results['gof'] = pyjcfit_goodness(f, xdata, ydata, results['para'], bounds, option)
     return results
     # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
@@ -219,12 +222,14 @@ def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
     error_hist = [None] * option['maxiteration']
     errorlast = 0
     error_counts = 0
+    para_order = list(range(len(para)))
+    random.shuffle(para_order)
     for iteration in range(option['maxiteration']):
         if (iteration + 1) % 100 == 0:
             print('.')
         else:
             print('.', end='')
-        for i in range(len(para)):
+        for i in para_order:
             p = para[i]
             precision = option['precision'] * (abs(para[i]) + option[
                 'precision'])  # calculate the smallest step for the significant figure of the parameter
