@@ -129,14 +129,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 
-def score_func(residual, option):
-    if option == 'L2':
-        return np.dot(residual, residual)
-    elif option == 'L1':
-        return np.abs(residual).sum()
 
-
-def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
+# ---------The ENTRANCE-------------------:
+def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main function to call
     """
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
@@ -157,7 +152,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
                   and bounds of the parameters with 95% confidence
 
     An example is given in the _main_ function.
-   
+
     References
     ----------
     [1] https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.6b05697
@@ -168,25 +163,52 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
         ACS Applied Matierals & Interfaces, 2019, 11(19), 18034-18043.
     """
     if not bounds:
-        ub = [1E20]*len(para_guess)
-        lb = [-1E20]*len(para_guess)
+        ub = [1E20] * len(para_guess)
+        lb = [-1E20] * len(para_guess)
         bounds = {'ub': ub, 'lb': lb}
     if not option:
-        option = {'maxiteration': 100, 'precision': 1E-6, 'exp_step': 0.5, 'convgtest': 1E-100, 'score_func': 'L2', 'show_error_surface': False}
+        option = {'maxiteration': 100, 'precision': 1E-6, 'exp_step': 0.5, 'convgtest': 1E-100, 'score_func': 'L2',
+                  'show_error_surface': False}
     else:
         if not 'score_func' in option:
-           option.update({'score_func': 'L2'})
+            option.update({'score_func': 'L2'})
         if not 'maxiteration' in option:
             option.update({'maxiteration': 100})
         if not 'precision' in option:
-            option.update({'precision': 0.00001}) # 5 sig. fig.
+            option.update({'precision': 0.00001})  # 5 sig. fig.
         if not 'exp_step' in option:
             option.update({'exp_step': 0.5})
         if not 'convgtest' in option:
             option.update({'convgtest': 1E-100})
         if not 'show_error_surface' in option:
             option.update({'show_error_surface': False})
+    if option['score_func'] == 'L2':
+        option['score_func'] = score_func_L2
+    elif option['score_func'] == 'L1':
+        option['score_func'] = score_func_L2
+    else:
+        print(
+            'unknown scoring methods, please code it and change the option in pyjcfit. Right now will try least square.')
+        option['score_func'] = score_func_L2
+    # ----------done initialization of options----------
+    # --------- call the kernel to fit the data---------
+    results = pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option)
+    # --------- calcualte the goodness of the fitting results---------
+    results['gof'] = pyjcfit_goodness(f, xdata, ydata, results['para'], bounds, option)
+    return results
+    # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
 
+
+def score_func_L2(residual):
+    return np.dot(residual, residual)  # sum the square of the residuals
+
+
+def score_func_L1(residual):
+    return np.abs(residual).sum()  # sum the absolute value of the residuals
+
+
+def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
+    score_func = option['score_func']  # load the method name to calculate the scores
     para = para_guess.copy()
     para_hist = [None] * (option['maxiteration'] + 1)
     para_hist[0] = para.copy()
@@ -198,32 +220,35 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
             print('.')
         else:
             print('.', end='')
-
         for i in range(len(para)):
             p = para[i]
-            precision = option['precision'] * (abs(para[i]) + option['precision'])
+            precision = option['precision'] * (abs(para[i]) + option[
+                'precision'])  # calculate the smallest step for the significant figure of the parameter
             lb = bounds['lb'][i]
             ub = bounds['ub'][i]
             ll = p - lb
-            nl = np.arange(int(np.floor(np.log2(ll / precision + 1))), 1, -option['exp_step'])
+            nl = np.arange(int(np.floor(np.log2(ll / precision + 1))), 1,
+                           -option['exp_step'])  # calculate the exponential spacing sequence to the lower bound
             ul = ub - p
-            nu = np.arange(1, int(np.floor(np.log2(ul / precision + 1))), option['exp_step'])
+            nu = np.arange(1, int(np.floor(np.log2(ul / precision + 1))),
+                           option['exp_step'])  # calculate the exponential spacing sequence to the upper bound
             ps = np.append(lb, np.subtract(p, np.multiply(np.exp2(nl), precision)))
             ps = np.append(ps, np.add(p, np.multiply(np.exp2(nu), precision)))
-            ps = np.append(ps, ub)
+            ps = np.append(ps,
+                           ub)  # done generate the searching series with exponentially distributed spaces for this parameter
             error = [0] * len(ps)
             for j in range(len(ps)):
                 para[i] = ps[j]
                 try:
                     residual = np.subtract(ydata, f(xdata, para))
-                    error[j] = score_func(residual, option['score_func'])
+                    error[j] = score_func(residual)
                 except:
-                    error[j] = np.inf
+                    error[j] = np.inf  # in case of invalid calculations, set error inf.
                     error_counts += 1
-            indmin = np.array(error).argmin()
-            para[i] = ps[indmin]
+            indmin = np.array(error).argmin()  # find where is the minimum error on this searching series then
+            para[i] = ps[indmin]  # update the optimum
         para_hist[iteration + 1] = para.copy()
-        error_hist[iteration] = error[indmin]/len(ydata)
+        error_hist[iteration] = error[indmin] / len(ydata)
         # convergence test
         if abs(error[indmin] - errorlast) <= option['convgtest']:
             print('\n convergence reached at # %i iteration' % iteration)
@@ -231,53 +256,54 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {}):
         errorlast = error[indmin]
     # print(para_hist)
     if iteration == option['maxiteration'] - 1:
-        print('maximum iteration number reached, change it if needed and/or use the result para as initial guess to continue.')
+        print(
+            'maximum iteration number reached, change it if needed and/or use the result para as initial guess to continue.')
     if error_counts:
         print('encountered ', error_counts, ' function calculation fails probably due to large bounds.')
-
-    gof = pyjcfit_goodness(f, xdata, ydata, para, bounds, option)
-    return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
-    # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
+    return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist}
 
 
+# ---------------------------------------End of kernel functions-------------------------------------
+# ----------Check the goodness of the fitting results --------------------------
 def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
+    # score_func = option['score_func'] # will always use least-square to calculate the goodness of fitting
     yfit = f(xdata, para)
     n = len(xdata)
     residual = np.subtract(ydata, yfit)
     residual_sq = np.square(residual, residual)
     a = np.divide(residual_sq, yfit)
-    chisq = sum(filter(lambda i: not(np.isinf(i)), a))
+    chisq = sum(filter(lambda i: not (np.isinf(i)), a))
 
-    ymean =np.mean(yfit)
+    ymean = np.mean(yfit)
     sumy = sum(np.square(np.subtract(ydata, ymean)))
     sumr = sum(residual_sq)
-    rsq = 1-sumr/sumy
-    sigma = np.sqrt(sumr/n)
+    rsq = 1 - sumr / sumy
+    sigma = np.sqrt(sumr / n)
 
     # find the 95% confidence region of the parameters
-    para95_ub = [0]*len(para)
-    para95_lb = [0]*len(para)
+    para95_ub = [0] * len(para)
+    para95_lb = [0] * len(para)
 
     for i in range(len(para)):
         precision = option['precision'] * (abs(para[i]) + option['precision'])
         parau = para.copy()
         p = para[i]
         ub = bounds['ub'][i]
-        ul = ub-p
+        ul = ub - p
         nu = np.arange(1, int(np.floor(np.log2(ul / precision + 1))), option['exp_step'])
         psu = np.append(p, np.add(p, np.multiply(np.exp2(nu), precision)))
         psu = np.append(psu, ub)
-        sigmau = [0]*len(psu)
+        sigmau = [0] * len(psu)
         for j in range(len(psu)):
             parau[i] = psu[j]
             try:
                 yfitu = f(xdata, parau)
                 residual = np.subtract(ydata, yfitu)
-                sigmau[j] = np.sqrt(np.dot(residual, residual)/n)
+                sigmau[j] = np.sqrt(np.dot(residual, residual) / n)
             except:
                 sigmau[j] = np.inf
-        a = abs(np.subtract(sigmau , sigma))
-        b = abs(a-2*sigma/np.sqrt(n-len(para)))
+        a = abs(np.subtract(sigmau, sigma))
+        b = abs(a - 2 * sigma / np.sqrt(n - len(para)))
         indminu = np.array(b).argmin()
         para95_ub[i] = psu[indminu]
 
@@ -293,11 +319,11 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
             try:
                 yfitl = f(xdata, paral)
                 residual = np.subtract(ydata, yfitl)
-                sigmal[j] = np.sqrt(np.dot(residual, residual)/n)
+                sigmal[j] = np.sqrt(np.dot(residual, residual) / n)
             except:
                 sigma[j] = np.inf
         a = abs(sigmal - sigma)
-        b = abs(a-2*sigma/np.sqrt(n-len(para)))
+        b = abs(a - 2 * sigma / np.sqrt(n - len(para)))
         indminl = np.array(b).argmin()
         para95_lb[i] = psl[indminl]
 
@@ -325,8 +351,9 @@ if __name__ == '__main__':
     from pyjcfit import pyjcfit
     import time
 
+
     def objective(x, para):
-        return np.add(np.multiply(para[0],x), para[1])
+        return np.add(np.multiply(para[0], x), para[1])
 
 
     # # load input variables
@@ -339,10 +366,10 @@ if __name__ == '__main__':
     # or simulate a set of data
     n = 100
     para_true = (1.23456789, 9.87654321)
-    x_value = np.arange(0, n, 1)
+    x_value = np.arange(0, n, 10)
     x_valuen = x_value + np.random.normal(0, 0.00001, len(x_value))
-    y_value = list(np.add(objective(x_valuen, para_true), np.random.normal(0, 10, len(x_value)))) #SNR about sum of paraTrue(A)/noise
-
+    y_value = list(np.add(objective(x_valuen, para_true),
+                          np.random.normal(0, 10, len(x_value))))  # SNR about sum of paraTrue(A)/noise
 
     # initial guess of parameters and bounds
     para_guess = [1, 1]  # initial guessed parameters for the objective function
