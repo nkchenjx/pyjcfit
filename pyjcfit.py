@@ -132,7 +132,6 @@ from matplotlib import pyplot
 
 # ---------The ENTRANCE-------------------:
 def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main function to call
-    print('this is 2')
     """
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
