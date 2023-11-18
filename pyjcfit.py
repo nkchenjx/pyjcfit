@@ -132,6 +132,7 @@ from matplotlib import pyplot
 
 # ---------The ENTRANCE-------------------:
 def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main function to call
+    print('this is 2')
     """
     use non-linear least square random searching algorithm to fit a function f to data.
     assume ydata = f(xdata, parameters)
@@ -199,6 +200,10 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main func
     # 95% bounds in gof are 2 sigma uncertainty at local minima and do not necessarily cover the global minima
 
 
+# --------- End of entrance function and return the project results --------------
+
+
+# ------------------Kernel functions starts below------------------------------:
 def score_func_L2(residual):
     return np.dot(residual, residual)  # sum the square of the residuals
 
@@ -263,7 +268,8 @@ def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
     return {'para': para, 'para_hist': para_hist, 'error_hist': error_hist}
 
 
-# ---------------------------------------End of kernel functions-------------------------------------
+# ------- End of kernel functions----------------------------------------------------------------------
+
 # ----------Check the goodness of the fitting results --------------------------
 def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
     # score_func = option['score_func'] # will always use least-square to calculate the goodness of fitting
