@@ -1,7 +1,7 @@
 # Use a non-linear least square random searching algorithm to fit data.
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
-# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023, in PyCharm 2023.2.
+# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023 in PyCharm 2023.2.
 # MIT License
 # Copyright (c) 2023 Jixin Chen
 #
@@ -144,7 +144,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main func
     :param bounds: bounds of the parameters. can give a very large bound but the narrower the range the faster the fitting
     :param option: maxiteration, maximum number of iteration, necessary for most fitting projects to control time.
            precision, significant figures of parameters, e.g. 0.1 two sig. fig., 0.01, 3 sig. fig. et.. ex_step, searching spacing exponentially distributed,
-           e.g. 0.5 for a parameter 1.3 and precision 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ...
+           e.g. 0.5 for a parameter 1.3 and precision 0.1 meaning the searching steps will be 1.3+2^0.5*0.1, 1.3+2^1*0.1, ... If initial guess is close to bounds then bounds*precision will be smallest step
     :return: {'para': para, 'para_hist': para_hist, 'error_hist': error_hist, 'gof': gof}
              para is the fitted parameter
              para_hist is the history of the parameter of the searching iterations.
@@ -221,15 +221,18 @@ def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
     para_hist[0] = para.copy()
     error_hist = [None] * option['maxiteration']
     errorlast = 0
+    errorpara = np.inf
     error_counts = 0
     para_order = list(range(len(para)))
-    
+
     for iteration in range(option['maxiteration']):
-        if (iteration + 1) % 100 == 0:
+        random.shuffle(para_order)
+        if (iteration + 1) % 1000 == 0:
+            print(iteration)
+        elif (iteration + 1) % 100 == 0:
             print('.')
         else:
             print('.', end='')
-        random.shuffle(para_order)
         for i in para_order:
             p = para[i]
             precision = option['precision'] * (abs(para[i]) + option[
@@ -237,33 +240,36 @@ def pyjcfit_kernel(f, xdata, ydata, para_guess, bounds, option):
             lb = bounds['lb'][i]
             ub = bounds['ub'][i]
             ll = p - lb
-            nl = np.arange(int(np.floor(np.log2(ll / precision + 1))), 1,
+            nl = np.arange(int(np.floor(np.log2(ll / precision + 1))), 0,
                            -option['exp_step'])  # calculate the exponential spacing sequence to the lower bound
             ul = ub - p
-            nu = np.arange(1, int(np.floor(np.log2(ul / precision + 1))),
+            nu = np.arange(0, int(np.floor(np.log2(ul / precision + 1))),
                            option['exp_step'])  # calculate the exponential spacing sequence to the upper bound
             ps = np.append(lb, np.subtract(p, np.multiply(np.exp2(nl), precision)))
             ps = np.append(ps, np.add(p, np.multiply(np.exp2(nu), precision)))
             ps = np.append(ps,
                            ub)  # done generate the searching series with exponentially distributed spaces for this parameter
-            error = [0] * len(ps)
+            error = [np.inf] * len(ps)
             for j in range(len(ps)):
                 para[i] = ps[j]
                 try:
                     residual = np.subtract(ydata, f(xdata, para))
                     error[j] = score_func(residual)
                 except:
-                    error[j] = np.inf  # in case of invalid calculations, set error inf.
                     error_counts += 1
             indmin = np.array(error).argmin()  # find where is the minimum error on this searching series then
-            para[i] = ps[indmin]  # update the optimum
+            if error[indmin] < errorpara:
+                para[i] = ps[indmin]  # update the optimum
+                errorpara = error[indmin]
+            else:
+                para[i] = p
         para_hist[iteration + 1] = para.copy()
-        error_hist[iteration] = error[indmin] / len(ydata)
+        error_hist[iteration] = errorpara / len(ydata)
         # convergence test
-        if abs(error[indmin] - errorlast) <= option['convgtest']:
+        if abs(errorpara - errorlast) <= option['convgtest']:
             print('\n convergence reached at # %i iteration' % iteration)
             break
-        errorlast = error[indmin]
+        errorlast = errorpara
     # print(para_hist)
     if iteration == option['maxiteration'] - 1:
         print(
@@ -377,7 +383,7 @@ if __name__ == '__main__':
     # or simulate a set of data
     n = 100
     para_true = (1.23456789, 9.87654321)
-    x_value = np.arange(0, n, 10)
+    x_value = np.arange(0, n, 2)
     x_valuen = x_value + np.random.normal(0, 0.00001, len(x_value))
     y_value = list(np.add(objective(x_valuen, para_true),
                           np.random.normal(0, 10, len(x_value))))  # SNR about sum of paraTrue(A)/noise
