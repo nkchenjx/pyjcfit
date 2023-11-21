@@ -1,6 +1,6 @@
 # Coded by Jixin Chen @ Ohio University, Department of Chemistry and Biochemistry
 # First coded in MATLAB on 2016/04/05
-# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023.
+# Converted to python 3.12 2023/11/07. Developed and tested on software versions Python 3.12, Windows 11, Anaconda 3 11/2023, PyCharm 2023.2.
 
 # MIT License
 # Copyright (c) 2023 Jixin Chen
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         return y
     def objective(x, para):
         y = np.multiply(para[0], np.cos(np.multiply(para[1], x)))
-        y = np.add(y, np.multiply(para[1], np.sin(np.multiply(para[0], x))))
+        y = np.add(y, np.multiply(para[2], np.sin(np.multiply(para[3], x))))
         return y
 
     # or simulate a set of data
@@ -69,28 +69,26 @@ if __name__ == '__main__':
     print('\n---- control function curve_fit from scipy using Levenberg-Marquardt algorithm ----')
 
 
-    def objectivec(x, a, b):  # for scipy curve_fit
+    def objectivec(x, a, b, c, d):  # for scipy curve_fit
         y = np.multiply(a, np.cos(np.multiply(b, x)))
-        y = np.add(y, np.multiply(b, np.sin(np.multiply(a, x))))
+        y = np.add(y, np.multiply(c, np.sin(np.multiply(d, x))))
         return y
 
 
 
     start_time = time.time()
-
-
-
-    [para, pcov, ] = curve_fit(objectivec, x_value, y_value, method='lm')  # lm: the Levenberg-Marquardt algorithm through least square residual search.
+    for i in range(1000): #repeat 1000 times so the time of each is millisecond
+        [para, pcov, ] = curve_fit(objectivec, x_value, y_value, method='lm')  # lm: the Levenberg-Marquardt algorithm through least square residual search.
     finish_time = time.time()
     print('fitted para', para)
-    print('---- elapsed time for curve_fit = %.9f seconds  ----' % (finish_time - start_time))
+    print('---- elapsed time for curve_fit = %.9f milliseconds  ----' % (finish_time - start_time))
     x_new = np.arange(0, np.max(x_value), 0.1)
-    y_new = objectivec(x_new, para[0], para[1])
+    y_new = objectivec(x_new, para[0], para[1], para[2], para[3])
     pyplot.figure(100)
     # pyplot.subplot(2, 1, 2)
     pyplot.scatter(x_value, y_value)
     pyplot.plot(x_new, y_new, '-', color='red')
-    pyplot.plot(x_value, np.subtract(y_value, objectivec(x_value, para[0], para[1])), color='orange')
+    pyplot.plot(x_value, np.subtract(y_value, objectivec(x_value, para[0], para[1], para[2], para[3])), color='orange')
     pyplot.title(('curve_fit',  para))
     # pyplot.show()
 
@@ -98,8 +96,8 @@ if __name__ == '__main__':
 
 # ------JCFIT starts here initial guess of parameters and bounds
     print('\n---- JCFit starts ----')
-    para_guess = [1, 1] # initial guessed parameters for the objective function
-    bounds = {'ub': (10, 10), 'lb': (0.01, 0.01)}  # upper bounds (ub) and lower bounds (lb) ordered the same as parameters
+    para_guess = [1, 1, 1, 1] # initial guessed parameters for the objective function
+    bounds = {'ub': (10, 10, 10, 10), 'lb': (0.01, 0.01, 0.01, 0.01)}  # upper bounds (ub) and lower bounds (lb) ordered the same as parameters
     # check if bounds and para_guess are well-ordered.
     d1 = np.subtract(bounds['ub'], para_guess)
     d2 = np.subtract(para_guess, bounds['lb'])
@@ -109,7 +107,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 1000, 'precision': 1E-10, 'exp_step': 0.01, 'convgtest': 0, 'score_func': 'L1', 'show_error_surface': False}
+    option = {'maxiteration': 100, 'precision': 1E-10, 'exp_step': 0.01, 'convgtest': 0, 'score_func': 'L1', 'show_error_surface': True}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig. But if initial guess is close to bounds, then bounds*precision will be the smallest step resolution.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -152,6 +150,18 @@ if __name__ == '__main__':
     pyplot.subplot(2, 1, 2)
     pyplot.plot(error_hist, '-', color='red')
     pyplot.title('error history')
+
+    # ----------------- FFT  ----------
+    print('-------------------- FFT-------')
+    start_time = time.time()
+    for i in range(1000): #repeat 1000 times so the time unit of each is millisecond
+        sp = np.fft.fft(y_value)
+    finish_time = time.time()
+    print('FFT time in millisecond  ', (finish_time-start_time))
+    x = np.arange(0, 1000, 1)
+    freq = np.fft.fftfreq(x.shape[-1])
+    pyplot.figure()
+    pyplot.plot(freq, sp.real, freq, sp.imag)
 
 
     pyplot.show()
