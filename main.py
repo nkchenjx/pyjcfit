@@ -66,7 +66,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 100, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100, 'show_error_surface': True}
+    option = {'maxiteration': 100, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 0, 'show_error_surface': True}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
