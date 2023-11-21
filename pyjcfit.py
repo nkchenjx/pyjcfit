@@ -288,7 +288,7 @@ def pyjcfit_goodness(f, xdata, ydata, para, bounds, option):
     n = len(xdata)
     residual = np.subtract(ydata, yfit)
     residual_sq = np.square(residual, residual)
-    a = np.divide(residual_sq, yfit)
+    a = np.abs(np.divide(residual_sq, yfit))
     chisq = sum(filter(lambda i: not (np.isinf(i)), a))
 
     ymean = np.mean(yfit)
