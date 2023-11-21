@@ -25,7 +25,7 @@
 # Anyone uses or modifies pyjcfit function please keep the above copyright information.
 #
 #
-# def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 1E-100}):
+# def pyjcfit(f, xdata, ydata, para_guess, bounds = {}, option = {'maxiteration': 50, 'precision': 0.00001, 'exp_step': 0.5, 'convgtest': 0}):
 # Use non-linear least square random searching algorithm to fit a function f to data.
 # assume ydata = f(xdata, parameters)
 # :param f: objective function input xdata and para, give yfit. can be complicated combination of functions of
@@ -85,7 +85,7 @@
 #             print(" para_guess[%s] and its bounds out of order." % i)
 #
 #     # set searching options
-#     option = {'maxiteration': 50, 'precision': 0.001, 'exp_step': 0.5, 'convgtest': 1E-100}
+#     option = {'maxiteration': 50, 'precision': 0.001, 'exp_step': 0.5, 'convgtest': 0}
 #     # maxiteration is the maximum searching iteration.
 #     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
 #     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
@@ -168,7 +168,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main func
         lb = [-1E20] * len(para_guess)
         bounds = {'ub': ub, 'lb': lb}
     if not option:
-        option = {'maxiteration': 100, 'precision': 1E-6, 'exp_step': 0.5, 'convgtest': 1E-100, 'score_func': 'L2',
+        option = {'maxiteration': 100, 'precision': 1E-6, 'exp_step': 0.5, 'convgtest': 0, 'score_func': 'L2',
                   'show_error_surface': False}
     else:
         if not 'score_func' in option:
@@ -180,7 +180,7 @@ def pyjcfit(f, xdata, ydata, para_guess, bounds={}, option={}):  # the main func
         if not 'exp_step' in option:
             option.update({'exp_step': 0.5})
         if not 'convgtest' in option:
-            option.update({'convgtest': 1E-100})
+            option.update({'convgtest': 0})
         if not 'show_error_surface' in option:
             option.update({'show_error_surface': False})
     if option['score_func'] == 'L2':
@@ -401,7 +401,7 @@ if __name__ == '__main__':
             print(" para_guess[%s] and its bounds out of order." % i)
 
     # set searching options
-    option = {'maxiteration': 100, 'precision': 1E-15, 'exp_step': 0.5, 'convgtest': 1E-100}
+    option = {'maxiteration': 100, 'precision': 1E-15, 'exp_step': 0.5, 'convgtest': 0}
     # maxiteration is the maximum searching iteration.
     # precision defines the significant figures. It is the smallest numerical search step of each paramter. e.g. paraguess of previous iteration = 10 and precision = 0.01, then searching step is 0.1 for this iteration and this parameter, i.e. precision = 0.01 is 2 sig fig.
     # exp_step, searching step size +-para*precision*(2^exp_step)^n where n is 1, 2, 3,...
