@@ -158,7 +158,7 @@ if __name__ == '__main__':
         sp = np.fft.fft(y_value)
     finish_time = time.time()
     print('FFT time in millisecond  ', (finish_time-start_time))
-    x = np.arange(0, 1000, 1)
+    x = np.arange(0, len(x_value), 1)
     freq = np.fft.fftfreq(x.shape[-1])
     pyplot.figure()
     pyplot.plot(freq, sp.real, freq, sp.imag)
