@@ -32,5 +32,8 @@ The fitting time of each iteration is scaled with the number of parameters of th
 
 The code can be changed to fit multiple curves globally by introducing different models for different curves using the same parameters.
 
+ACKNOWLEDGMENTS 
+This publication was made possible by grant number 2R15HG009972 from the National Human Genome Research Institute (NHGRI) at the National Institutes of Health (NIH), USA. Its contents are solely the responsibility of the authors and do not necessarily represent the official views of NHGRI.
+
 An example can be found at:
 Juvinch R. Vicente, Ali Rafiei Miandashti, Kurt Sy Piecco, Joseph R. Pyle, Martin E. Kordesch, Jixin Chen*, Single-Particle Organolead Halide Perovskite Photoluminescence as a Probe for Surface Reaction Kinetics. ACS Applied Matierals & Interfaces, 2019, 11(19), 18034-18043.
