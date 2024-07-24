@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
 # ------JCFIT starts here initial guess of parameters and bounds
     print('\n---- JCFit starts ---- ')
-    para_guess = [-0.1, 0.01, 1, 1, 1, 100, 10] # initial guessed parameters for the objective function
+    para_guess = [0, 0, 0, 0, 1, 20, 10] # initial guessed parameters for the objective function
     bounds = {'ub': (1, 1, 100, 100, 100, 200, 30),
                        'lb': (-1, -1, -100, -100, 0, 1, 5)}  # upper bounds (ub) and lower bounds (lb) ordered the same as parameters
     # check if bounds and para_guess are well-ordered.
