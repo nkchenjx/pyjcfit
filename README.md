@@ -3,6 +3,7 @@
 # The algorithm is 10-100 times slower (after optimization of parameters) than Levenberg–Marquardt searching algorithm, and is suitable for COMPLICATED model, global fitting, or neural network optimization.
 # Particullary suitable for peak searching, and functions with ill-behaviors on its score surface when gradient descent does not work.
 # A preprint manuscript link: PyJCFit: A Non-Linear Regression Random Search Algorithm for Chemistry Data Fitting, https://doi.org/10.26434/chemrxiv-2023-k9rvm
+# Paper published: Structured stochastic curve fitting without gradient calculation, https://doi.org/10.1016/j.jcmds.2024.100097 
 First coded in MATLAB 2014b on 2016/04/05
 Converted to python 3.12 on 2023/11/07
 
